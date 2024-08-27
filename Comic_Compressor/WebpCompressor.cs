@@ -1,6 +1,7 @@
 ﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.Processing;
+using ShellProgressBar;
 
 namespace Comic_Compressor
 {
@@ -11,15 +12,29 @@ namespace Comic_Compressor
             // Step 1: Get all subdirectories and store them in a list
             List<string> subdirectories = new(Directory.GetDirectories(sourceImagePath, "*", SearchOption.AllDirectories));
 
+            int totalFiles = 0;
+            foreach (string subdirectory in subdirectories)
+            {
+                totalFiles += GetImageFiles(subdirectory).Length;
+            }
+
+            using var progressBar = new ShellProgressBar.ProgressBar(totalFiles, "Compressing images", new ProgressBarOptions
+            {
+                ProgressCharacter = '─',
+                ProgressBarOnBottom = true
+            });
+
             // Step 2: Iterate through each subdirectory in order
             foreach (string subdirectory in subdirectories)
             {
                 // Step 3: Process each directory
-                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath);
+                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath, progressBar);
             }
+
+            Console.WriteLine("All directories processed successfully.");
         }
 
-        private static void ProcessDirectory(string subdirectory, string sourceImagePath, string targetStoragePath)
+        private static void ProcessDirectory(string subdirectory, string sourceImagePath, string targetStoragePath, ShellProgressBar.ProgressBar progressBar)
         {
             // Get the relative path of the subdirectory
             string relativePath = Path.GetRelativePath(sourceImagePath, subdirectory);
@@ -31,15 +46,34 @@ namespace Comic_Compressor
             // Get all image files in the subdirectory (jpg and png)
             string[] imageFiles = GetImageFiles(subdirectory);
 
-            // Iterate through each image file
-            foreach (string imageFile in imageFiles)
+            // Set up ParallelOptions to limit the number of concurrent threads
+            ParallelOptions options = new()
+            {
+                MaxDegreeOfParallelism = 2 // Adjust this value to set the number of concurrent threads
+            };
+
+            // Process each image file in parallel
+            Parallel.ForEach(imageFiles, options, imageFile =>
             {
                 // Set the target file path with the .webp extension
                 string targetFilePath = Path.Combine(targetSubdirectory, Path.GetFileNameWithoutExtension(imageFile) + ".webp");
-                CompressImage(imageFile, targetFilePath);
-            }
 
-            Console.WriteLine($"{Path.GetFileName(subdirectory)} processed successfully.");
+                // Check if the target file already exists
+                if (!File.Exists(targetFilePath))
+                {
+                    CompressImage(imageFile, targetFilePath);
+
+                    // Update progress bar safely
+                    lock (progressBar)
+                    {
+                        progressBar.Tick($"Processed {Path.GetFileName(imageFile)}");
+                    }
+                }
+                else
+                {
+                    lock (progressBar) { progressBar.Tick($"Skipped {Path.GetFileName(imageFile)}"); }
+                }
+            });
         }
 
         private static string[] GetImageFiles(string directoryPath)
@@ -69,10 +103,10 @@ namespace Comic_Compressor
                 image.Mutate(x => x.Resize(newWidth, newHeight));
             }
 
-            // Save the image as WebP with a quality level of 70 (for lossy compression)
+            // Save the image as WebP with a quality level of 85 (for lossy compression)
             var encoder = new WebpEncoder
             {
-                Quality = 70,
+                Quality = 90,
                 FileFormat = WebpFileFormatType.Lossy
             };
 
