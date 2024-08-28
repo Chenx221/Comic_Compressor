@@ -1,6 +1,5 @@
 ﻿using LibHeifSharp;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using ShellProgressBar;
 using SixLabors.ImageSharp.Metadata;
 using SixLabors.ImageSharp.PixelFormats;
@@ -9,7 +8,7 @@ namespace Comic_Compressor
 {
     internal class AvifCompressor
     {
-        internal static void CompressImages(string sourceImagePath, string targetStoragePath)
+        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount)
         {
             LibHeifSharpDllImportResolver.Register();
             // Step 1: Get all subdirectories and store them in a list
@@ -31,13 +30,13 @@ namespace Comic_Compressor
             foreach (string subdirectory in subdirectories)
             {
                 // Step 3: Process each directory
-                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath, progressBar);
+                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath, progressBar, threadCount);
             }
 
             Console.WriteLine("All directories processed successfully.");
         }
 
-        private static void ProcessDirectory(string subdirectory, string sourceImagePath, string targetStoragePath, ShellProgressBar.ProgressBar progressBar)
+        private static void ProcessDirectory(string subdirectory, string sourceImagePath, string targetStoragePath, ShellProgressBar.ProgressBar progressBar, int threadCount)
         {
             // Get the relative path of the subdirectory
             string relativePath = Path.GetRelativePath(sourceImagePath, subdirectory);
@@ -52,7 +51,7 @@ namespace Comic_Compressor
             // Set up ParallelOptions to limit the number of concurrent threads
             ParallelOptions options = new()
             {
-                MaxDegreeOfParallelism = 2 // Adjust this value to set the number of concurrent threads
+                MaxDegreeOfParallelism = threadCount // Adjust this value to set the number of concurrent threads
             };
 
             // Process each image file in parallel
@@ -82,7 +81,7 @@ namespace Comic_Compressor
         private static string[] GetImageFiles(string directoryPath)
         {
             // Get all image files supported by ImageSharp
-            string[] supportedExtensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff"];
+            string[] supportedExtensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff", "*.gif"];
             List<string> allFiles = [];
 
             foreach (string extension in supportedExtensions)
