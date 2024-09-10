@@ -8,7 +8,7 @@ namespace Comic_Compressor
         internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, int format)
         {
             //check format
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
             //config
             MagickFormat targetFormat = MagickFormat.Jxl;
             string targetExtension = ".jxl";

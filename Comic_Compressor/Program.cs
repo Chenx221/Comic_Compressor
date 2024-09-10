@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using ImageMagick;
+using System.Text;
 using System.Windows.Forms;
 namespace Comic_Compressor
 {
@@ -7,6 +8,7 @@ namespace Comic_Compressor
         [STAThread]
         static void Main()
         {
+            //OpenCL.IsEnabled = true;
             Console.OutputEncoding = Encoding.UTF8;
 
             Console.WriteLine("请选择源图像所在位置：");
