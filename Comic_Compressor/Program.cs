@@ -17,7 +17,7 @@ namespace Comic_Compressor
                 return;
             }
 
-            Console.WriteLine("请输入目标存储位置：");
+            Console.WriteLine("请选择保存位置：");
             string? targetStoragePath = GetFolderPath();
             if (string.IsNullOrEmpty(targetStoragePath))
             {
@@ -29,7 +29,7 @@ namespace Comic_Compressor
             int threadCount = int.Parse(Console.ReadLine() ?? "2");
             Console.WriteLine($"处理线程数设定：{threadCount}");
 
-            Console.WriteLine("请选择压缩模式：0 - 压缩成webp，1 - 压缩成avif");
+            Console.WriteLine("目标格式：0 - webp, 1 - avif, 2 - JXL(JPEG-XL), 3 - JPG, 4 - PNG, 5 - 保留原格式(best effort)");
             string? modeInput = Console.ReadLine();
             if (modeInput == null)
             {
@@ -47,11 +47,23 @@ namespace Comic_Compressor
                     AvifCompressor.CompressImages(sourceImagePath, targetStoragePath, threadCount);
                     GetCompressorResult(sourceImagePath, targetStoragePath);
                     break;
+                case "2":
+                    JxlCompressor.CompressImages(sourceImagePath, targetStoragePath, threadCount);
+                    GetCompressorResult(sourceImagePath, targetStoragePath);
+                    break;
+                case "3":
+                case "4":
+                    LegacyFormatCompressor.CompressImages(sourceImagePath, targetStoragePath, threadCount,int.Parse(modeInput));
+                    GetCompressorResult(sourceImagePath, targetStoragePath);
+                    break;
+                case "5":
+                    throw new NotImplementedException();
                 default:
-                    Console.WriteLine("不支持的模式");
+                    Console.WriteLine("不支持的格式");
                     break;
             }
         }
+
 
         private static string? GetFolderPath()
         {
@@ -74,10 +86,8 @@ namespace Comic_Compressor
         {
             long size = 0;
 
-            // 遍历目录中的所有文件
             foreach (string file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
             {
-                // 获取文件的大小并累加到总大小中
                 FileInfo fileInfo = new(file);
                 size += fileInfo.Length;
             }
@@ -85,15 +95,30 @@ namespace Comic_Compressor
             return size;
         }
 
+        private static string GetHumanReadableSize(long size)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            double len = size;
+            int order = 0;
+            while (len >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                len = len / 1024;
+            }
+
+            return $"{len:0.##} {sizes[order]}";
+        }
+
+
         private static void GetCompressorResult(string source, string target)
         {
             long sourceSize = GetDirectorySize(source);
             long targetSize = GetDirectorySize(target);
             double reduced = (sourceSize - targetSize) * 1.0 / sourceSize;
 
-            Console.WriteLine($"源目录大小：{sourceSize} 字节");
-            Console.WriteLine($"目标目录大小：{targetSize} 字节");
-            Console.WriteLine($"已减少：{reduced:P}的体积");
+            Console.WriteLine($"压缩前大小：{GetHumanReadableSize(sourceSize)}");
+            Console.WriteLine($"压缩后大小：{GetHumanReadableSize(targetSize)}");
+            Console.WriteLine($"体积已减少{reduced:P}");
         }
 
     }

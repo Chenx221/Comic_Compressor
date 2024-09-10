@@ -11,19 +11,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibHeifSharp" Version="3.2.0" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.0.0" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="aom.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="dav1d.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="libde265.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="libheif.dll">
@@ -43,9 +36,6 @@
     </None>
     <None Update="libs\libx265.dll">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="libx265.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
