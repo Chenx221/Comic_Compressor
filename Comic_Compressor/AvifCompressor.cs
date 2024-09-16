@@ -5,12 +5,11 @@ namespace Comic_Compressor
 {
     internal class AvifCompressor : Utils
     {
-        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount)
+        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, bool usePresetQuality, int Quality)
         {
-            //config
             MagickFormat targetFormat = MagickFormat.Avif;
             string targetExtension = ".avif";
-            int targetQuality = 80;
+            int targetQuality = usePresetQuality ? 80 : Quality;
 
             List<string> subdirectories = new(Directory.GetDirectories(sourceImagePath, "*", SearchOption.AllDirectories));
 

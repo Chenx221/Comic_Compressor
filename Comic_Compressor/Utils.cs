@@ -28,7 +28,7 @@ namespace Comic_Compressor
         // Get all image files in a directory with supported extensions
         public static string[] GetImageFiles(string directoryPath)
         {
-            string[] supportedExtensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff", "*.jxl", "*.avif", "*.webp"];
+            string[] supportedExtensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff", "*.tif", "*.jxl", "*.avif", "*.webp"];
             ConcurrentBag<string> allFiles = [];
 
             foreach (string extension in supportedExtensions)
@@ -60,6 +60,56 @@ namespace Comic_Compressor
             {
                 string targetFilePath = Path.Combine(targetSubdirectory, Path.GetFileNameWithoutExtension(imageFile) + format);
 
+                if (!File.Exists(targetFilePath))
+                {
+                    CompressImage(imageFile, targetFilePath, mFormat, quality);
+
+                    lock (progressBar)
+                    {
+                        progressBar.Tick($"Processed {Path.GetFileName(imageFile)}");
+                    }
+                }
+                else
+                {
+                    lock (progressBar) { progressBar.Tick($"Skipped {Path.GetFileName(imageFile)}"); }
+                }
+            });
+        }
+
+        //Process all image files in a directory, save as origin format
+        public static void ProcessDirectory(string subdirectory, string sourceImagePath, string targetStoragePath, ShellProgressBar.ProgressBar progressBar, int threadCount, int quality)
+        {
+            string relativePath = Path.GetRelativePath(sourceImagePath, subdirectory);
+
+            string targetSubdirectory = Path.Combine(targetStoragePath, relativePath);
+            Directory.CreateDirectory(targetSubdirectory);
+
+            string[] imageFiles = GetImageFiles(subdirectory);
+
+            ParallelOptions options = new()
+            {
+                MaxDegreeOfParallelism = threadCount // Adjust this value to set the number of concurrent threads
+            };
+
+            Parallel.ForEach(imageFiles, options, imageFile =>
+            {
+                string targetFilePath = Path.Combine(targetSubdirectory, Path.GetFileName(imageFile));
+                //detect file format
+                //supportedExtensions = ["*.jpg", "*.jpeg", "*.png", "*.bmp", "*.gif", "*.tiff", "*.jxl", "*.avif", "*.webp"];
+                string extension = Path.GetExtension(targetFilePath).ToLower();
+
+                MagickFormat mFormat = extension switch
+                {
+                    ".jpg" or ".jpeg" => MagickFormat.Jpeg,
+                    ".png" => MagickFormat.Png,
+                    ".bmp" => MagickFormat.Bmp,
+                    ".gif" => MagickFormat.Gif,
+                    ".tiff" or ".tif" => MagickFormat.Tiff,
+                    ".jxl" => MagickFormat.Jxl,
+                    ".avif" => MagickFormat.Avif,
+                    ".webp" => MagickFormat.WebP,
+                    _ => throw new Exception()//这个位置怎么还会有意外情况
+                };
                 if (!File.Exists(targetFilePath))
                 {
                     CompressImage(imageFile, targetFilePath, mFormat, quality);

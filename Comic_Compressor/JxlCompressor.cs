@@ -5,12 +5,11 @@ namespace Comic_Compressor
 {
     internal class JxlCompressor : Utils
     {
-        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount)
+        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, bool usePresetQuality, int Quality)
         {
-            //config
             MagickFormat targetFormat = MagickFormat.Jxl;
             string targetExtension = ".jxl";
-            int targetQuality = 90;
+            int targetQuality = usePresetQuality ? 90 : Quality;
 
             List<string> subdirectories = new(Directory.GetDirectories(sourceImagePath, "*", SearchOption.AllDirectories));
 

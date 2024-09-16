@@ -1,17 +1,11 @@
-﻿using ImageMagick;
-using ShellProgressBar;
+﻿using ShellProgressBar;
 namespace Comic_Compressor
 {
     internal class MixProcessor : Utils
     {
-        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, int format)
+        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, bool usePresetQuality, int Quality)
         {
-            //detect mu-config
-            throw new NotImplementedException();
-            //config
-            MagickFormat targetFormat = MagickFormat.Jxl;
-            string targetExtension = ".jxl";
-            int targetQuality = 90;
+            int targetQuality = usePresetQuality ? 90 : Quality;
 
             List<string> subdirectories = new(Directory.GetDirectories(sourceImagePath, "*", SearchOption.AllDirectories));
 
@@ -29,7 +23,7 @@ namespace Comic_Compressor
 
             foreach (string subdirectory in subdirectories)
             {
-                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath, progressBar, threadCount, targetExtension, targetFormat, targetQuality);
+                ProcessDirectory(subdirectory, sourceImagePath, targetStoragePath, progressBar, threadCount, targetQuality);
             }
 
             Console.WriteLine("All directories processed successfully.");

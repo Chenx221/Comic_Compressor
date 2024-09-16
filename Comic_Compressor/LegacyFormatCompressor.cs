@@ -5,14 +5,25 @@ namespace Comic_Compressor
     //Process images in legacy format(JPG,PNG)
     internal class LegacyFormatCompressor : Utils
     {
-        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, int format)
+        internal static void CompressImages(string sourceImagePath, string targetStoragePath, int threadCount, bool usePresetQuality, int Quality, int format)
         {
-            //check format
-            throw new NotImplementedException();
-            //config
-            MagickFormat targetFormat = MagickFormat.Jxl;
-            string targetExtension = ".jxl";
-            int targetQuality = 90;
+            MagickFormat targetFormat = format switch
+            {
+                3 => MagickFormat.Jpeg,
+                4 => MagickFormat.Png,
+                5 => MagickFormat.Bmp,
+                _ => throw new Exception(),
+            };
+
+            string targetExtension = format switch
+            {
+                3 => ".jpg",
+                4 => ".png",
+                5 => ".bmp",
+                _ => throw new Exception(),
+            };
+
+            int targetQuality = usePresetQuality ? 90 : Quality;
 
             List<string> subdirectories = new(Directory.GetDirectories(sourceImagePath, "*", SearchOption.AllDirectories));
 
