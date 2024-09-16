@@ -33,6 +33,14 @@ namespace Comic_Compressor
                 return;
             }
 
+            Console.WriteLine("目标格式：0 - webp, 1 - avif, 2 - JXL(JPEG-XL), 3 - JPG, 4 - PNG, 5 - BMP, 6 - 保留原格式");
+            string? modeInput = Console.ReadLine();
+            if (modeInput == null)
+            {
+                Console.WriteLine("无效格式");
+                return;
+            }
+
             Console.WriteLine("使用预设质量(默认使用)？(y/n)");
             string? input = Console.ReadLine()?.Trim().ToLower();
             bool usePresetQuality = input == null || input == "" || input == "y" || input == "yes";
@@ -52,14 +60,6 @@ namespace Comic_Compressor
                     Console.WriteLine("invalid image quality");
                     return;
                 }
-            }
-
-            Console.WriteLine("目标格式：0 - webp, 1 - avif, 2 - JXL(JPEG-XL), 3 - JPG, 4 - PNG, 5 - BMP, 6 - 保留原格式");
-            string? modeInput = Console.ReadLine();
-            if (modeInput == null)
-            {
-                Console.WriteLine("无效格式");
-                return;
             }
 
             switch (modeInput)
